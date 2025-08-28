@@ -6,7 +6,7 @@ import gov.cabinetoffice.gap.adminbackend.listeners.SchemeUpdateListener;
 import lombok.*;
 import org.hibernate.Hibernate;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;

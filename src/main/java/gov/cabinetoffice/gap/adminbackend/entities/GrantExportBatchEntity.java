@@ -4,7 +4,7 @@ import gov.cabinetoffice.gap.adminbackend.enums.GrantExportStatus;
 import lombok.*;
 import org.hibernate.Hibernate;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;

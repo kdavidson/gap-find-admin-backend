@@ -32,7 +32,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
-import javax.validation.Validator;
+import jakarta.validation.Validator;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

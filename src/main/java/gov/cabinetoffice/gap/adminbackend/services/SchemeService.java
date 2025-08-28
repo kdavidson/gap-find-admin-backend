@@ -22,8 +22,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpSession;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Slf4j

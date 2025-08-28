@@ -30,7 +30,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import javax.persistence.EntityNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;

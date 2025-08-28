@@ -11,13 +11,12 @@ import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Log4j2
 public class TechSupportUserService {
 
     private final TechSupportUserRepository techSupportUserRepository;

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import gov.cabinetoffice.gap.adminbackend.dtos.submission.GrantApplicant;
 import gov.cabinetoffice.gap.adminbackend.dtos.submission.SubmissionDefinition;
 import gov.cabinetoffice.gap.adminbackend.enums.SubmissionStatus;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
@@ -11,7 +12,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -81,7 +82,7 @@ public class Submission extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private SubmissionStatus status;
 
-    @Type(type = "json")
+    @Type(JsonType.class)
     @Column(columnDefinition = "json")
     private SubmissionDefinition definition;
 

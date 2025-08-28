@@ -1,10 +1,11 @@
 package gov.cabinetoffice.gap.adminbackend.entities;
 
 import gov.cabinetoffice.gap.adminbackend.models.AdvertDefinition;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import lombok.*;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "gap_definition")
@@ -28,7 +29,7 @@ public class GapDefinition {
     @Builder.Default
     private Integer version = 1;
 
-    @Type(type = "json")
+    @Type(JsonType.class)
     @Column(columnDefinition = "json")
     private AdvertDefinition definition;
 

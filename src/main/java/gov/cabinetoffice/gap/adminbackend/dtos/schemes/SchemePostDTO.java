@@ -3,9 +3,9 @@ package gov.cabinetoffice.gap.adminbackend.dtos.schemes;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 /**
  * Added this class to keep Swagger correct, as id (schemeId) cannot be present when

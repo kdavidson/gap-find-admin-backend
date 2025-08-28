@@ -9,10 +9,10 @@ import lombok.SneakyThrows;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpSession;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.util.*;
 
 @Service

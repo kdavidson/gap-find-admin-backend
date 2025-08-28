@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,8 +28,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 
 import java.util.Collections;
 import java.util.List;
@@ -131,7 +132,7 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
      */
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-            HttpHeaders headers, HttpStatus status, WebRequest request) {
+            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         log.error(ex.getMessage(), ex);
         BindingResult bindResults = ex.getBindingResult();
 
@@ -142,9 +143,8 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
      * This overridden method handles controller methods which cause bind exceptions It'll
      * spit back a json representation of a FieldErrorsDTO or a ClassErrorsDTO
      */
-    @Override
-    protected ResponseEntity<Object> handleBindException(BindException ex, HttpHeaders headers, HttpStatus status,
-            WebRequest request) {
+    @ExceptionHandler(BindException.class)
+    protected ResponseEntity<Object> handleBindException(BindException ex, WebRequest request) {
         log.error(ex.getMessage(), ex);
         BindingResult bindResults = ex.getBindingResult();
 

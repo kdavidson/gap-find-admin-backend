@@ -3,6 +3,7 @@ package gov.cabinetoffice.gap.adminbackend.entities;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import gov.cabinetoffice.gap.adminbackend.enums.GrantAdvertStatus;
 import gov.cabinetoffice.gap.adminbackend.models.GrantAdvertResponse;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
@@ -10,7 +11,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.UUID;
@@ -88,7 +89,7 @@ public class GrantAdvert extends BaseEntity {
     @Column(name = "grant_advert_name")
     private String grantAdvertName;
 
-    @Type(type = "json")
+    @Type(JsonType.class)
     @Column(name = "response", columnDefinition = "json")
     private GrantAdvertResponse response;
 

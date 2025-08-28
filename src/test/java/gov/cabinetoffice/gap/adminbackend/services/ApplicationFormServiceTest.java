@@ -29,11 +29,11 @@ import org.odftoolkit.odfdom.doc.OdfTextDocument;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpSession;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.util.*;
 
 import static gov.cabinetoffice.gap.adminbackend.testdata.ApplicationFormTestData.*;

@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +54,7 @@ public class SpotlightSubmission {
     private Instant lastUpdated;
 
     @ManyToMany(mappedBy = "spotlightSubmissions")
+    @Builder.Default
     private List<SpotlightBatch> batches = new ArrayList<>();
 
 }

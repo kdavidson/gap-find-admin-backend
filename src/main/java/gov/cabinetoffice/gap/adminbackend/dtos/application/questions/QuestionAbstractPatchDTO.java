@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import gov.cabinetoffice.gap.adminbackend.enums.ResponseTypeEnum;
 import lombok.Data;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
 import java.util.Map;
 
 /**

@@ -3,7 +3,7 @@ package gov.cabinetoffice.gap.adminbackend.entities;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "tech_support_user")

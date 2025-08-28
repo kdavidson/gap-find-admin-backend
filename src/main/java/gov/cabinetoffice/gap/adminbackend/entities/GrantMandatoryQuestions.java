@@ -1,35 +1,40 @@
 package gov.cabinetoffice.gap.adminbackend.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.vladmihalcea.hibernate.type.array.EnumArrayType;
-import com.vladmihalcea.hibernate.type.array.internal.AbstractArrayType;
+//import com.vladmihalcea.hibernate.type.array.EnumArrayType;
+//import com.vladmihalcea.hibernate.type.array.internal.AbstractArrayType;
 import gov.cabinetoffice.gap.adminbackend.dtos.submission.GrantApplicant;
 import gov.cabinetoffice.gap.adminbackend.enums.GrantMandatoryQuestionFundingLocation;
 import gov.cabinetoffice.gap.adminbackend.enums.GrantMandatoryQuestionOrgType;
 import gov.cabinetoffice.gap.adminbackend.enums.GrantMandatoryQuestionStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.util.Set;
 import org.hibernate.annotations.ColumnTransformer;
+import org.hibernate.annotations.JdbcType;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Parameter;
-import org.hibernate.annotations.TypeDef;
+import org.hibernate.dialect.PostgreSQLEnumJdbcType;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
 @EntityListeners(AuditingEntityListener.class)
 @Data
+@EqualsAndHashCode(callSuper=false)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "grant_mandatory_questions")
-@TypeDef(typeClass = EnumArrayType.class, defaultForType = GrantMandatoryQuestionFundingLocation[].class, parameters = {
-        @Parameter(name = AbstractArrayType.SQL_ARRAY_TYPE, value = "grant_mandatory_question_funding_location") })
+//@TypeDef(
+//        typeClass = EnumArrayType.class, defaultForType = GrantMandatoryQuestionFundingLocation[].class,
+//        parameters = {
+//        @Parameter(name = AbstractArrayType.SQL_ARRAY_TYPE, value = "grant_mandatory_question_funding_location") })
 public class GrantMandatoryQuestions extends BaseEntity {
 
     @Id
@@ -80,6 +85,9 @@ public class GrantMandatoryQuestions extends BaseEntity {
     private BigDecimal fundingAmount;
 
     @Column(name = "funding_location")
+    @Enumerated(EnumType.STRING)
+    @JdbcType(PostgreSQLEnumJdbcType.class)
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private GrantMandatoryQuestionFundingLocation[] fundingLocation;
 
     @Column(name = "status", nullable = false)

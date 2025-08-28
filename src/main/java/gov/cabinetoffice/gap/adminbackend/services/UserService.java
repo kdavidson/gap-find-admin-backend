@@ -21,6 +21,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -180,7 +181,7 @@ public class UserService {
                 .body(BodyInserters.fromValue(List.of(sub)))
                 .headers(h -> h.set("Authorization", encryptSecret(userServiceConfig.getSecret(),userServiceConfig.getPublicKey())))
                 .retrieve()
-                .onStatus(HttpStatus::isError, clientResponse -> {
+                .onStatus(HttpStatusCode::isError, clientResponse -> {
                     log.error("Unable to get email address for user with sub {}, HTTP status code {}", sub, clientResponse.statusCode());
                     return Mono.empty();
                 })

@@ -1,6 +1,6 @@
 package gov.cabinetoffice.gap.adminbackend.dtos.application;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import gov.cabinetoffice.gap.adminbackend.enums.ApplicationStatusEnum;

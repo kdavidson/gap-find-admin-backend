@@ -3,9 +3,9 @@ package gov.cabinetoffice.gap.adminbackend.entities;
 import lombok.*;
 import org.hibernate.Hibernate;
 
-import javax.persistence.Id;
+import jakarta.persistence.Id;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 
 @Entity

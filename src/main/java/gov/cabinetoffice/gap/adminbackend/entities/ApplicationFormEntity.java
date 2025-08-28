@@ -2,11 +2,12 @@ package gov.cabinetoffice.gap.adminbackend.entities;
 
 import gov.cabinetoffice.gap.adminbackend.dtos.application.ApplicationDefinitionDTO;
 import gov.cabinetoffice.gap.adminbackend.enums.ApplicationStatusEnum;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -55,7 +56,7 @@ public class ApplicationFormEntity extends BaseEntity {
     private ApplicationStatusEnum applicationStatus;
 
     @Column(name = "definition", nullable = false, columnDefinition = "json")
-    @Type(type = "json")
+    @Type(JsonType.class)
     private ApplicationDefinitionDTO definition;
 
     public ApplicationFormEntity(Integer grantSchemeId, String applicationName, Integer lastUpdateBy,

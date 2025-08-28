@@ -25,7 +25,7 @@ public class SpotlightBatchDto {
 
     private int version;
 
-    private Instant created = Instant.now();
+    final private Instant created = Instant.now();
 
     private Instant lastUpdated;
 

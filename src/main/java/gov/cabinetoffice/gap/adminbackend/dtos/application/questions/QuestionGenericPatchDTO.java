@@ -5,6 +5,7 @@ import gov.cabinetoffice.gap.adminbackend.annotations.NotAllNull;
 import gov.cabinetoffice.gap.adminbackend.enums.ResponseTypeEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import java.util.Map;
  * question types except MultiSelect and Dropdown.
  */
 @Data
+@EqualsAndHashCode(callSuper=false)
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @NotAllNull(fields = { "profileField", "fieldTitle", "hintText", "displayText", "questionSuffix", "validation" })

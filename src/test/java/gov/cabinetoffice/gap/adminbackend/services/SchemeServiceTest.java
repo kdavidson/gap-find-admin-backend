@@ -30,8 +30,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
-import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpSession;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

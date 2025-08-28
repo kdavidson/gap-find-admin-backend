@@ -5,7 +5,9 @@ import gov.cabinetoffice.gap.adminbackend.annotations.NotAllNull;
 import gov.cabinetoffice.gap.adminbackend.enums.ResponseTypeEnum;
 import lombok.Data;
 
-import javax.validation.constraints.Size;
+import jakarta.validation.constraints.Size;
+import lombok.EqualsAndHashCode;
+
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +17,7 @@ import java.util.Map;
  * questions.
  */
 @Data
+@EqualsAndHashCode(callSuper=false)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @NotAllNull(
         fields = { "profileField", "fieldTitle", "hintText", "options", "displayText", "questionSuffix", "validation" })

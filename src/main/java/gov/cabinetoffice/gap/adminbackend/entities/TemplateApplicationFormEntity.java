@@ -1,11 +1,12 @@
 package gov.cabinetoffice.gap.adminbackend.entities;
 
 import gov.cabinetoffice.gap.adminbackend.dtos.application.ApplicationDefinitionDTO;
+import io.hypersistence.utils.hibernate.type.json.JsonType;
 import lombok.*;
 import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
@@ -23,7 +24,7 @@ public class TemplateApplicationFormEntity {
     private Integer templateId;
 
     @Column(name = "definition", nullable = false, columnDefinition = "json")
-    @Type(type = "json")
+    @Type(JsonType.class)
     private ApplicationDefinitionDTO definition;
 
     @Override

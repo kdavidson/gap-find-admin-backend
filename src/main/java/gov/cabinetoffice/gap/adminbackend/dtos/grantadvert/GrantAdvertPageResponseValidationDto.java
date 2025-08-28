@@ -5,7 +5,7 @@ import gov.cabinetoffice.gap.adminbackend.validation.annotations.ValidPageRespon
 import lombok.Builder;
 import lombok.Data;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 @Data

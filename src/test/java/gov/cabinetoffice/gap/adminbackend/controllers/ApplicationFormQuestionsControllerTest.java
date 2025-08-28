@@ -22,7 +22,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import static gov.cabinetoffice.gap.adminbackend.testdata.ApplicationFormTestData.*;
 import static org.mockito.Mockito.*;
