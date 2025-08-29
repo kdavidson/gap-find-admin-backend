@@ -142,14 +142,18 @@ public class ControllerExceptionHandler extends ResponseEntityExceptionHandler {
     /**
      * This overridden method handles controller methods which cause bind exceptions It'll
      * spit back a json representation of a FieldErrorsDTO or a ClassErrorsDTO
+     *
+     *   handleBindException
+     * 	 * @deprecated as of 6.0 since {@link org.springframework.web.method.annotation.ModelAttributeMethodProcessor}
+     * 	 * now raises the {@link MethodArgumentNotValidException} subclass instead.
      */
-    @ExceptionHandler(BindException.class)
-    protected ResponseEntity<Object> handleBindException(BindException ex, WebRequest request) {
-        log.error(ex.getMessage(), ex);
-        BindingResult bindResults = ex.getBindingResult();
-
-        return constructErrorObjectFromBindResults(bindResults);
-    }
+//    @Override
+//    public ResponseEntity<Object> handleBindException(BindException ex, WebRequest request) {
+//        log.error(ex.getMessage(), ex);
+//        BindingResult bindResults = ex.getBindingResult();
+//
+//        return constructErrorObjectFromBindResults(bindResults);
+//    }
 
     private ResponseEntity<Object> constructErrorObjectFromBindResults(BindingResult bindResults) {
         if (bindResults.hasGlobalErrors()) {

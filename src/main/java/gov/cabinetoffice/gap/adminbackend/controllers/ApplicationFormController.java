@@ -44,8 +44,10 @@ import java.util.UUID;
 @Tag(name = "Application Forms", description = "API for handling organisations.")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/application-forms")
+@RequestMapping(ApplicationFormController.CONTROLLER_PATH)
 public class ApplicationFormController {
+
+    protected static final String CONTROLLER_PATH = "/application-forms";
 
     private final ApplicationFormService applicationFormService;
 
@@ -67,7 +69,7 @@ public class ApplicationFormController {
             @ApiResponse(responseCode = "400", description = "Bad request body",
                     content = @Content(mediaType = "application/json")), })
     @CheckSchemeOwnership
-    public ResponseEntity<Void> postApplicationForm(HttpServletRequest request,
+    public ResponseEntity<GenericPostResponseDTO> postApplicationForm(HttpServletRequest request,
             @RequestBody @Valid ApplicationFormPostDTO applicationFormPostDTO) {
         final SchemeDTO scheme = schemeService.getSchemeBySchemeId(applicationFormPostDTO.getGrantSchemeId());
         final GenericPostResponseDTO idResponse = this.applicationFormService
@@ -76,7 +78,7 @@ public class ApplicationFormController {
         logApplicationEvent(EventType.APPLICATION_CREATED, request.getRequestedSessionId(),
                 idResponse.getId().toString());
 
-        return new ResponseEntity(idResponse, HttpStatus.CREATED);
+        return new ResponseEntity<>(idResponse, HttpStatus.CREATED);
     }
 
     @GetMapping("/find")
@@ -113,20 +115,20 @@ public class ApplicationFormController {
             @ApiResponse(responseCode = "404", description = "Application not found with given id",
                     content = @Content(mediaType = "application/json")) })
     @CheckSchemeOwnership
-    public ResponseEntity<Void> getApplicationFormSummary(@PathVariable @NotNull Integer applicationId,
-            @RequestParam(defaultValue = "true") Boolean withSections,
-            @RequestParam(defaultValue = "true") Boolean withQuestions) {
+    public ResponseEntity<?> getApplicationFormSummary(@PathVariable @NotNull Integer applicationId,
+                                                       @RequestParam(defaultValue = "true") Boolean withSections,
+                                                       @RequestParam(defaultValue = "true") Boolean withQuestions) {
         try {
             ApplicationFormDTO response = this.applicationFormService.retrieveApplicationFormSummary(applicationId,
                     withSections, withQuestions);
-            return new ResponseEntity(response, HttpStatus.OK);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         }
         catch (AccessDeniedException ade) {
-            return new ResponseEntity(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         catch (ApplicationFormException e) {
             GenericErrorDTO genericErrorDTO = new GenericErrorDTO(e.getMessage());
-            return new ResponseEntity(genericErrorDTO, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(genericErrorDTO, HttpStatus.NOT_FOUND);
         }
 
     }
@@ -141,17 +143,17 @@ public class ApplicationFormController {
             @ApiResponse(responseCode = "404", description = "Application not found with given id",
                     content = @Content(mediaType = "application/json")), })
     @CheckSchemeOwnership
-    public ResponseEntity<Void> deleteApplicationForm(@PathVariable @NotNull Integer applicationId) {
+    public ResponseEntity<?> deleteApplicationForm(@PathVariable @NotNull Integer applicationId) {
         try {
             this.applicationFormService.deleteApplicationForm(applicationId);
-            return new ResponseEntity(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.OK);
         }
         catch (AccessDeniedException ade) {
-            return new ResponseEntity(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         catch (EntityNotFoundException e) {
             GenericErrorDTO genericErrorDTO = new GenericErrorDTO(e.getMessage());
-            return new ResponseEntity(genericErrorDTO, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(genericErrorDTO, HttpStatus.NOT_FOUND);
         }
 
     }
@@ -224,10 +226,10 @@ public class ApplicationFormController {
         }
         catch (NotFoundException nfe) {
             GenericErrorDTO genericErrorDTO = new GenericErrorDTO(nfe.getMessage());
-            return new ResponseEntity(genericErrorDTO, HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(genericErrorDTO, HttpStatus.NOT_FOUND);
         }
         catch (AccessDeniedException ade) {
-            return new ResponseEntity(HttpStatus.FORBIDDEN);
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
         catch (ApplicationFormException afe) {
             GenericErrorDTO genericErrorDTO = new GenericErrorDTO(afe.getMessage());

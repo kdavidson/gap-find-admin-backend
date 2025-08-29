@@ -16,6 +16,7 @@ import gov.cabinetoffice.gap.adminbackend.mappers.ValidationErrorMapperImpl;
 import gov.cabinetoffice.gap.adminbackend.repositories.ApplicationFormRepository;
 import gov.cabinetoffice.gap.adminbackend.security.interceptors.AuthorizationHeaderInterceptor;
 import gov.cabinetoffice.gap.adminbackend.services.*;
+import gov.cabinetoffice.gap.adminbackend.testdata.ApplicationFormTestData;
 import gov.cabinetoffice.gap.adminbackend.utils.HelperUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -29,7 +30,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -37,11 +37,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.*;
 
+import static gov.cabinetoffice.gap.adminbackend.controllers.ApplicationFormController.CONTROLLER_PATH;
 import static gov.cabinetoffice.gap.adminbackend.testdata.ApplicationFormTestData.*;
 import static gov.cabinetoffice.gap.adminbackend.testdata.generators.RandomApplicationFormGenerators.randomApplicationFormFound;
 import static org.junit.jupiter.api.Assertions.*;
@@ -91,6 +92,9 @@ class ApplicationFormControllerTest {
     @MockBean
     private OdtService odtService;
 
+    private static final String CONTROLLER_PATH_WITH_APPLICATION_ID
+            = ApplicationFormController.CONTROLLER_PATH + "/" + ApplicationFormTestData.SAMPLE_APPLICATION_ID;
+
     @Test
     @WithAdminSession
     void saveApplicationFormHappyPathTest() throws Exception {
@@ -101,7 +105,9 @@ class ApplicationFormControllerTest {
                 .thenReturn(SAMPLE_APPLICATION_RESPONSE_SUCCESS);
 
         this.mockMvc
-                .perform(post("/application-forms/").contentType(MediaType.APPLICATION_JSON)
+                .perform(post(CONTROLLER_PATH)
+                        .characterEncoding(Charset.defaultCharset())
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(HelperUtils.asJsonString(SAMPLE_APPLICATION_POST_FORM_DTO)))
                 .andExpect(status().isCreated());
 
@@ -120,7 +126,9 @@ class ApplicationFormControllerTest {
                 .thenThrow(new ApplicationFormException("Error message"));
 
         this.mockMvc
-                .perform(post("/application-forms/").contentType(MediaType.APPLICATION_JSON)
+                .perform(post(CONTROLLER_PATH)
+                        .characterEncoding(Charset.defaultCharset())
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(HelperUtils.asJsonString(SAMPLE_APPLICATION_POST_FORM_DTO)))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().json(HelperUtils.asJsonString(new GenericErrorDTO("Error message"))));
@@ -139,7 +147,11 @@ class ApplicationFormControllerTest {
 
         when(this.applicationFormService.getMatchingApplicationFormsIds(SAMPLE_APPLICATION_FORM_EXISTS_DTO_SINGLE_PROP))
                 .thenReturn(applicationFormsFoundList);
-        this.mockMvc.perform(get("/application-forms/find").contentType(MediaType.APPLICATION_JSON).params(params))
+
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/find")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .params(params))
                 .andExpect(status().isOk())
                 .andExpect(content().json(HelperUtils.asJsonString(applicationFormsFoundList)));
     }
@@ -157,22 +169,31 @@ class ApplicationFormControllerTest {
         when(this.applicationFormService
                 .getMatchingApplicationFormsIds(SAMPLE_APPLICATION_FORM_EXISTS_DTO_MULTIPLE_PROPS))
                         .thenReturn(applicationFormsFoundList);
-        this.mockMvc.perform(get("/application-forms/find").contentType(MediaType.APPLICATION_JSON).params(params))
+
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/find")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .params(params))
                 .andExpect(status().isOk())
                 .andExpect(content().json(HelperUtils.asJsonString(applicationFormsFoundList)));
     }
 
     @Test
     void checkApplicationFormExists_MultipleApplicationFormExist() throws Exception {
-        ApplicationFormsFoundDTO applicationFormFoundDTO = randomApplicationFormFound().build();
-        List<ApplicationFormsFoundDTO> applicationFormsFoundList = Collections.singletonList(applicationFormFoundDTO);
+        ApplicationFormsFoundDTO applicationFormFoundDTO1 = randomApplicationFormFound().build();
+        ApplicationFormsFoundDTO applicationFormFoundDTO2 = randomApplicationFormFound().build();
+        List<ApplicationFormsFoundDTO> applicationFormsFoundList = List.of(applicationFormFoundDTO1, applicationFormFoundDTO2);
 
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grantSchemeId", SAMPLE_SCHEME_ID.toString());
 
         when(this.applicationFormService.getMatchingApplicationFormsIds(SAMPLE_APPLICATION_FORM_EXISTS_DTO_SINGLE_PROP))
                 .thenReturn(applicationFormsFoundList);
-        this.mockMvc.perform(get("/application-forms/find").contentType(MediaType.APPLICATION_JSON).params(params))
+
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/find")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .params(params))
                 .andExpect(status().isOk())
                 .andExpect(content().json(HelperUtils.asJsonString(applicationFormsFoundList)));
     }
@@ -184,8 +205,12 @@ class ApplicationFormControllerTest {
 
         when(this.applicationFormService.getMatchingApplicationFormsIds(SAMPLE_APPLICATION_FORM_EXISTS_DTO_SINGLE_PROP))
                 .thenReturn(Collections.emptyList());
-        this.mockMvc.perform(get("/application-forms/find").contentType(MediaType.APPLICATION_JSON).params(params))
-                .andExpect(status().isNotFound()).andExpect(content().string(""));
+
+        this.mockMvc.perform(get(CONTROLLER_PATH + "/find")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .params(params))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
     }
 
     @Test
@@ -198,13 +223,19 @@ class ApplicationFormControllerTest {
         when(this.applicationFormService
                 .getMatchingApplicationFormsIds(SAMPLE_APPLICATION_FORM_EXISTS_DTO_MULTIPLE_PROPS))
                         .thenReturn(Collections.emptyList());
-        this.mockMvc.perform(get("/application-forms/find").contentType(MediaType.APPLICATION_JSON).params(params))
-                .andExpect(status().isNotFound()).andExpect(content().string(""));
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/find")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .params(params))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(""));
     }
 
     @Test
     void checkApplicationFormExists_InvalidRequestBody() throws Exception {
-        this.mockMvc.perform(get("/application-forms/find")).andExpect(status().isBadRequest())
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/find"))
+                .andExpect(status().isBadRequest())
                 .andExpect(content().json(HelperUtils.asJsonString(SAMPLE_CLASS_ERROR_NO_PROPS_PROVIDED)));
     }
 
@@ -212,7 +243,10 @@ class ApplicationFormControllerTest {
     void retrieveApplicationFormSummaryHappyPathTest() throws Exception {
         when(this.applicationFormService.retrieveApplicationFormSummary(SAMPLE_APPLICATION_ID, true, true))
                 .thenReturn(SAMPLE_APPLICATION_FORM_DTO);
-        this.mockMvc.perform(get("/application-forms/" + SAMPLE_APPLICATION_ID).contentType(MediaType.APPLICATION_JSON))
+
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(HelperUtils.asJsonString(SAMPLE_APPLICATION_POST_FORM_DTO)));
     }
@@ -221,8 +255,9 @@ class ApplicationFormControllerTest {
     void retrieveApplicationFormSummaryNoSectionsPathTest() throws Exception {
         when(this.applicationFormService.retrieveApplicationFormSummary(SAMPLE_APPLICATION_ID, false, true))
                 .thenReturn(SAMPLE_APPLICATION_FORM_DTO);
+
         this.mockMvc
-                .perform(get("/application-forms/" + SAMPLE_APPLICATION_ID + "?withSections=false")
+                .perform(get(CONTROLLER_PATH_WITH_APPLICATION_ID + "?withSections=false")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(HelperUtils.asJsonString(SAMPLE_APPLICATION_POST_FORM_DTO)));
@@ -232,8 +267,9 @@ class ApplicationFormControllerTest {
     void retrieveApplicationFormSummaryNoQuestionsPathTest() throws Exception {
         when(this.applicationFormService.retrieveApplicationFormSummary(SAMPLE_APPLICATION_ID, true, false))
                 .thenReturn(SAMPLE_APPLICATION_FORM_DTO);
+
         this.mockMvc
-                .perform(get("/application-forms/" + SAMPLE_APPLICATION_ID + "?withQuestions=false")
+                .perform(get(CONTROLLER_PATH_WITH_APPLICATION_ID + "?withQuestions=false")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().json(HelperUtils.asJsonString(SAMPLE_APPLICATION_POST_FORM_DTO)));
@@ -243,7 +279,10 @@ class ApplicationFormControllerTest {
     void retrieveApplicationFormSummaryNotFoundTest() throws Exception {
         when(this.applicationFormService.retrieveApplicationFormSummary(SAMPLE_APPLICATION_ID, true, true))
                 .thenThrow(new ApplicationFormException());
-        this.mockMvc.perform(get("/application-forms/" + SAMPLE_APPLICATION_ID).contentType(MediaType.APPLICATION_JSON))
+
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
 
@@ -251,7 +290,10 @@ class ApplicationFormControllerTest {
     void retrieveApplicationFormSummary_AccessDeniedTest() throws Exception {
         when(this.applicationFormService.retrieveApplicationFormSummary(SAMPLE_APPLICATION_ID, true, true))
                 .thenThrow(new AccessDeniedException("Error"));
-        this.mockMvc.perform(get("/application-forms/" + SAMPLE_APPLICATION_ID).contentType(MediaType.APPLICATION_JSON))
+
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isForbidden()).andExpect(content().string(""));
     }
 
@@ -259,7 +301,10 @@ class ApplicationFormControllerTest {
     void retrieveApplicationFormSummaryUnexpectedErrorTest() throws Exception {
         when(this.applicationFormService.retrieveApplicationFormSummary(SAMPLE_APPLICATION_ID, true, true))
                 .thenThrow(new RuntimeException("Generic error message"));
-        this.mockMvc.perform(get("/application-forms/" + SAMPLE_APPLICATION_ID).contentType(MediaType.APPLICATION_JSON))
+
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().json(HelperUtils.asJsonString(new GenericErrorDTO("Generic error message"))));
     }
@@ -267,15 +312,21 @@ class ApplicationFormControllerTest {
     @Test
     void deleteApplicationFormHappyPathTest() throws Exception {
         doNothing().when(this.applicationFormService).deleteApplicationForm(SAMPLE_APPLICATION_ID);
-        this.mockMvc.perform(delete("/application-forms/" + SAMPLE_APPLICATION_ID)).andExpect(status().isOk());
+
+        this.mockMvc
+                .perform(delete(CONTROLLER_PATH_WITH_APPLICATION_ID))
+                .andExpect(status().isOk());
     }
 
     @Test
     void deleteApplicationFormFailsTest() throws Exception {
         doThrow(new ApplicationFormException("Could not delete application form with id " + SAMPLE_APPLICATION_ID))
                 .when(this.applicationFormService).deleteApplicationForm(SAMPLE_APPLICATION_ID);
-        this.mockMvc.perform(delete("/application-forms/" + SAMPLE_APPLICATION_ID))
-                .andExpect(status().isInternalServerError()).andExpect(content().json(HelperUtils.asJsonString(
+
+        this.mockMvc
+                .perform(delete(CONTROLLER_PATH_WITH_APPLICATION_ID))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().json(HelperUtils.asJsonString(
                         new GenericErrorDTO("Could not delete application form with id " + SAMPLE_APPLICATION_ID))));
     }
 
@@ -284,7 +335,9 @@ class ApplicationFormControllerTest {
         doThrow(new AccessDeniedException("Error")).when(this.applicationFormService)
                 .deleteApplicationForm(SAMPLE_APPLICATION_ID);
 
-        this.mockMvc.perform(delete("/application-forms/" + SAMPLE_APPLICATION_ID)).andExpect(status().isForbidden())
+        this.mockMvc
+                .perform(delete(CONTROLLER_PATH_WITH_APPLICATION_ID))
+                .andExpect(status().isForbidden())
                 .andExpect(content().string(""));
     }
 
@@ -299,8 +352,9 @@ class ApplicationFormControllerTest {
                 SAMPLE_PATCH_APPLICATION_DTO, true);
 
         this.mockMvc
-                .perform(delete("/application-forms/lambda/" + SAMPLE_ADVERT_ID + "/application/")
-                        .contentType(MediaType.APPLICATION_JSON).header("Authorization", "shh"))
+                .perform(delete(CONTROLLER_PATH + "/lambda/" + SAMPLE_ADVERT_ID + "/application")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "shh"))
                 .andExpect(status().isNoContent());
 
         Mockito.verify(applicationFormService, Mockito.times(1)).patchApplicationForm(1,
@@ -312,8 +366,9 @@ class ApplicationFormControllerTest {
         doThrow(NotFoundException.class).when(grantAdvertService).getSchemeIdFromAdvert(SAMPLE_ADVERT_ID);
 
         this.mockMvc
-                .perform(delete("/application-forms/lambda/" + SAMPLE_ADVERT_ID + "/application/")
-                        .contentType(MediaType.APPLICATION_JSON).header("Authorization", "shh"))
+                .perform(delete(CONTROLLER_PATH + "/lambda/" + SAMPLE_ADVERT_ID + "/application")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "shh"))
                 .andExpect(status().isNotFound());
     }
 
@@ -329,8 +384,9 @@ class ApplicationFormControllerTest {
                 eq(true));
 
         this.mockMvc
-                .perform(delete("/application-forms/lambda/" + SAMPLE_ADVERT_ID + "/application/")
-                        .contentType(MediaType.APPLICATION_JSON).header("Authorization", "shh"))
+                .perform(delete(CONTROLLER_PATH + "/lambda/" + SAMPLE_ADVERT_ID + "/application")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "shh"))
                 .andExpect(status().isInternalServerError());
     }
 
@@ -339,8 +395,11 @@ class ApplicationFormControllerTest {
     void updateApplicationForm_SuccessfullyUpdatingApplication() throws Exception {
         doNothing().when(this.applicationFormService).patchApplicationForm(SAMPLE_APPLICATION_ID,
                 SAMPLE_PATCH_UPDATED_APPLICATION_DTO, false);
+
         this.mockMvc
-                .perform(patch("/application-forms/" + SAMPLE_APPLICATION_ID).contentType(MediaType.APPLICATION_JSON)
+                .perform(patch(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .characterEncoding(Charset.defaultCharset())
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(HelperUtils.asJsonString(SAMPLE_PATCH_UPDATED_APPLICATION_DTO)))
                 .andExpect(status().isNoContent());
 
@@ -353,8 +412,11 @@ class ApplicationFormControllerTest {
     void updateApplicationForm_SuccessfullyPublishingApplication() throws Exception {
         doNothing().when(this.applicationFormService).patchApplicationForm(SAMPLE_APPLICATION_ID,
                 SAMPLE_PATCH_APPLICATION_DTO, false);
+
         this.mockMvc
-                .perform(patch("/application-forms/" + SAMPLE_APPLICATION_ID).contentType(MediaType.APPLICATION_JSON)
+                .perform(patch(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .characterEncoding(Charset.defaultCharset())
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(HelperUtils.asJsonString(SAMPLE_PATCH_APPLICATION_DTO)))
                 .andExpect(status().isNoContent());
 
@@ -366,8 +428,12 @@ class ApplicationFormControllerTest {
     void updateApplicationForm_BadRequest_NoApplicationPropertiesProvided() throws Exception {
         doNothing().when(this.applicationFormService).patchApplicationForm(SAMPLE_APPLICATION_ID,
                 SAMPLE_PATCH_APPLICATION_DTO, false);
-        this.mockMvc.perform(patch("/application-forms/" + SAMPLE_APPLICATION_ID)
-                .contentType(MediaType.APPLICATION_JSON).content("{ \"testProp\": \"doesnt exist\"}"))
+
+        this.mockMvc
+                .perform(patch(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .characterEncoding(Charset.defaultCharset())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"testProp\": \"doesnt exist\"}"))
                 .andExpect(status().isBadRequest());
 
         verify(this.applicationFormService, never()).patchApplicationForm(anyInt(), any(ApplicationFormPatchDTO.class),
@@ -378,8 +444,11 @@ class ApplicationFormControllerTest {
 
     @Test
     void updateApplicationForm_BadRequest_InvalidPropertieValue() throws Exception {
-        this.mockMvc.perform(patch("/application-forms/" + SAMPLE_APPLICATION_ID)
-                .contentType(MediaType.APPLICATION_JSON).content("{ \"applicationStatus\": \"INCORRECT\"}"))
+        this.mockMvc
+                .perform(patch(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .characterEncoding(Charset.defaultCharset())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"applicationStatus\": \"INCORRECT\"}"))
                 .andExpect(status().isBadRequest());
 
         verify(this.applicationFormService, never()).patchApplicationForm(anyInt(), any(ApplicationFormPatchDTO.class),
@@ -392,8 +461,11 @@ class ApplicationFormControllerTest {
     void updateApplicationForm_ApplicationFormNotFound() throws Exception {
         doThrow(new NotFoundException("Not Found Message")).when(this.applicationFormService)
                 .patchApplicationForm(SAMPLE_APPLICATION_ID, SAMPLE_PATCH_APPLICATION_DTO, false);
+
         this.mockMvc
-                .perform(patch("/application-forms/" + SAMPLE_APPLICATION_ID).contentType(MediaType.APPLICATION_JSON)
+                .perform(patch(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .characterEncoding(Charset.defaultCharset())
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(HelperUtils.asJsonString(SAMPLE_PATCH_APPLICATION_DTO)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().json(HelperUtils.asJsonString(new GenericErrorDTO("Not Found Message"))));
@@ -405,8 +477,11 @@ class ApplicationFormControllerTest {
     void updateApplicationForm_AccessDenied() throws Exception {
         doThrow(new AccessDeniedException("Error")).when(this.applicationFormService)
                 .patchApplicationForm(SAMPLE_APPLICATION_ID, SAMPLE_PATCH_APPLICATION_DTO, false);
+
         this.mockMvc
-                .perform(patch("/application-forms/" + SAMPLE_APPLICATION_ID).contentType(MediaType.APPLICATION_JSON)
+                .perform(patch(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .characterEncoding(Charset.defaultCharset())
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(HelperUtils.asJsonString(SAMPLE_PATCH_APPLICATION_DTO)))
                 .andExpect(status().isForbidden()).andExpect(content().string(""));
 
@@ -417,10 +492,14 @@ class ApplicationFormControllerTest {
     void updateApplicationForm_GenericApplicationFormException() throws Exception {
         doThrow(new ApplicationFormException("Application Form Error Message")).when(this.applicationFormService)
                 .patchApplicationForm(SAMPLE_APPLICATION_ID, SAMPLE_PATCH_APPLICATION_DTO, false);
+
         this.mockMvc
-                .perform(patch("/application-forms/" + SAMPLE_APPLICATION_ID).contentType(MediaType.APPLICATION_JSON)
+                .perform(patch(CONTROLLER_PATH_WITH_APPLICATION_ID)
+                        .characterEncoding(Charset.defaultCharset())
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(HelperUtils.asJsonString(SAMPLE_PATCH_APPLICATION_DTO)))
-                .andExpect(status().isInternalServerError()).andExpect(content()
+                .andExpect(status().isInternalServerError())
+                .andExpect(content()
                         .json(HelperUtils.asJsonString(new GenericErrorDTO("Application Form Error Message"))));
 
         verifyNoInteractions(eventLogService);
@@ -438,7 +517,9 @@ class ApplicationFormControllerTest {
         when(applicationFormService.getApplicationById(anyInt())).thenReturn(ApplicationFormEntity.builder()
                 .lastUpdateBy(1).build());
 
-        this.mockMvc.perform(get("/application-forms/1/lastUpdated/email")).andExpect(status().isOk())
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/1/lastUpdated/email"))
+                .andExpect(status().isOk())
                 .andExpect(content().json(HelperUtils.asJsonString(encryptedLastUpdatedEmailDTO)));
 
     }
@@ -449,7 +530,9 @@ class ApplicationFormControllerTest {
         when(applicationFormService.getApplicationById(anyInt())).thenReturn(ApplicationFormEntity.builder()
                 .lastUpdated(Instant.now()).build());
 
-        this.mockMvc.perform(get("/application-forms/1/lastUpdated/email")).andExpect(status().isOk())
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/1/lastUpdated/email"))
+                .andExpect(status().isOk())
                 .andExpect(content().json(
                         HelperUtils.asJsonString(EncryptedEmailAddressDTO.builder().deletedUser(true).build())
                 ));
@@ -460,14 +543,17 @@ class ApplicationFormControllerTest {
         when(applicationFormService.getApplicationById(anyInt())).thenReturn(ApplicationFormEntity.builder()
                 .lastUpdateBy(1).build());
         when(userService.getGrantAdminById(anyInt())).thenReturn(Optional.empty());
-        this.mockMvc.perform(get("/application-forms/1/lastUpdated/email")).andExpect(status().isNotFound());
+
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/1/lastUpdated/email"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void getApplicationStatus() throws Exception {
         when(applicationFormService.getApplicationStatus(anyInt())).thenReturn(ApplicationStatusEnum.PUBLISHED);
 
-        this.mockMvc.perform(get("/application-forms/1/status"))
+        this.mockMvc.perform(get(CONTROLLER_PATH + "/1/status"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(ApplicationStatusEnum.PUBLISHED.toString()));
     }
@@ -476,7 +562,8 @@ class ApplicationFormControllerTest {
     void getApplicationStatusNotFoundException() throws Exception {
         when(applicationFormService.getApplicationStatus(anyInt())).thenThrow(new NotFoundException());
 
-        this.mockMvc.perform(get("/application-forms/1/status"))
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/1/status"))
                 .andExpect(status().isNotFound());
     }
 
@@ -488,10 +575,12 @@ class ApplicationFormControllerTest {
         when(applicationFormService.getApplicationFormExport(applicationId)).thenReturn(odfTextDocument);
         when(odtService.odtToResource(any())).thenReturn(new ByteArrayResource(new byte[]{1}));
 
-        this.mockMvc.perform(get("/application-forms/1/download-summary"))
+        this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/1/download-summary"))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"application.odt\""))
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_OCTET_STREAM_VALUE));
+
         verify(applicationFormService, times(1)).getApplicationFormExport(any());
         verify(odtService, times(1)).odtToResource(any());
     }
@@ -503,7 +592,8 @@ class ApplicationFormControllerTest {
         when(applicationFormService.getApplicationFormExport(applicationId)).thenReturn(odfTextDocument);
         when(odtService.odtToResource(Mockito.any())).thenThrow(new IOException());
 
-        MvcResult result = this.mockMvc.perform(get("/application-forms/" + applicationId + "/download-summary"))
+        MvcResult result = this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/" + applicationId + "/download-summary"))
                 .andExpect(status().isInternalServerError())
                 .andReturn();
 
@@ -512,11 +602,6 @@ class ApplicationFormControllerTest {
         assertEquals(OdtException.class, resolvedException.getClass());
         verify(applicationFormService, times(1)).getApplicationFormExport(any());
         verify(odtService, times(1)).odtToResource(any());
-
-
-        UUID submissionId = UUID.randomUUID();
-        HttpServletRequest mockRequest = new MockHttpServletRequest();
-        Submission mockSubmission = mock(Submission.class);
     }
 
 
@@ -525,7 +610,8 @@ class ApplicationFormControllerTest {
         when(applicationFormService.getApplicationFormExport(Mockito.any()))
                 .thenThrow(new RuntimeException());
 
-        MvcResult result = this.mockMvc.perform(get("/application-forms/1/download-summary"))
+        MvcResult result = this.mockMvc
+                .perform(get(CONTROLLER_PATH + "/1/download-summary"))
                 .andExpect(status().isInternalServerError())
                 .andReturn();
 
