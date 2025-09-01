@@ -170,11 +170,11 @@ public class ApplicationFormQuestionsController {
                     content = @Content(mediaType = "application/json")) })
     @CheckSchemeOwnership
     public ResponseEntity<String> updateQuestionOrder(final HttpServletRequest request,
-                                                      final @PathVariable @NotBlank Integer applicationId,
+                                                      final @PathVariable @NotNull Integer applicationId,
                                                       final @PathVariable @NotBlank String sectionId,
                                                       final @PathVariable @NotBlank String questionId,
-                                                      final @PathVariable @NotBlank Integer increment,
-                                                      final @RequestParam @NotBlank Integer version) {
+                                                      final @PathVariable @NotNull Integer increment,
+                                                      final @RequestParam @NotNull Integer version) {
         try {
             this.applicationFormService.updateQuestionOrder(applicationId, sectionId, questionId, increment, version);
             logApplicationUpdatedEvent(request.getSession().getId(), applicationId);
