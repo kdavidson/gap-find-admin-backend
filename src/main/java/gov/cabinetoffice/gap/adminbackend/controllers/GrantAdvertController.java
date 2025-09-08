@@ -89,8 +89,11 @@ public class GrantAdvertController {
     @PatchMapping(value = "/{grantAdvertId}/sections/{sectionId}/pages/{pageId}", consumes = "application/json",
             produces = "application/json")
     @CheckSchemeOwnership
-    public ResponseEntity updatePage(HttpServletRequest request, @PathVariable UUID grantAdvertId,
-            @PathVariable String sectionId, @PathVariable String pageId,
+    public ResponseEntity updatePage(
+            HttpServletRequest request,
+            @PathVariable UUID grantAdvertId,
+            @PathVariable String sectionId,
+            @PathVariable String pageId,
             @RequestBody @NotNull GrantAdvertPagePatchResponseDto patchAdvertPageResponse) {
         GrantAdvertPageResponse responseWithId = GrantAdvertPageResponse.builder()
                 .id(pageId)

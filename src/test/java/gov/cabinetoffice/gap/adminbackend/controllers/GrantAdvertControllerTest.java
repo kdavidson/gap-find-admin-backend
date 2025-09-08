@@ -3,15 +3,18 @@ package gov.cabinetoffice.gap.adminbackend.controllers;
 import com.contentful.java.cma.model.CMAHttpException;
 import gov.cabinetoffice.gap.adminbackend.annotations.WithAdminSession;
 import gov.cabinetoffice.gap.adminbackend.config.LambdasInterceptor;
-import gov.cabinetoffice.gap.adminbackend.dtos.grantadvert.*;
+import gov.cabinetoffice.gap.adminbackend.dtos.grantadvert.CreateGrantAdvertDto;
+import gov.cabinetoffice.gap.adminbackend.dtos.grantadvert.GetGrantAdvertPublishingInformationResponseDTO;
+import gov.cabinetoffice.gap.adminbackend.dtos.grantadvert.GetGrantAdvertStatusResponseDTO;
+import gov.cabinetoffice.gap.adminbackend.dtos.grantadvert.GrantAdvertPageResponseValidationDto;
 import gov.cabinetoffice.gap.adminbackend.entities.GrantAdvert;
+import gov.cabinetoffice.gap.adminbackend.enums.AdvertDefinitionQuestionResponseType;
 import gov.cabinetoffice.gap.adminbackend.enums.GrantAdvertPageResponseStatus;
 import gov.cabinetoffice.gap.adminbackend.enums.GrantAdvertStatus;
 import gov.cabinetoffice.gap.adminbackend.exceptions.NotFoundException;
 import gov.cabinetoffice.gap.adminbackend.mappers.GrantAdvertMapperImpl;
 import gov.cabinetoffice.gap.adminbackend.mappers.ValidationErrorMapperImpl;
-import gov.cabinetoffice.gap.adminbackend.models.GrantAdvertPageResponse;
-import gov.cabinetoffice.gap.adminbackend.models.GrantAdvertQuestionResponse;
+import gov.cabinetoffice.gap.adminbackend.models.*;
 import gov.cabinetoffice.gap.adminbackend.security.interceptors.AuthorizationHeaderInterceptor;
 import gov.cabinetoffice.gap.adminbackend.services.EventLogService;
 import gov.cabinetoffice.gap.adminbackend.services.GrantAdvertService;
@@ -32,29 +35,18 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
-import jakarta.validation.Validator;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collections;
-import java.util.Set;
 import java.util.UUID;
 
 import static gov.cabinetoffice.gap.adminbackend.testdata.generators.RandomGrantAdvertGenerators.randomGrantAdvertEntity;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -79,9 +71,10 @@ class GrantAdvertControllerTest {
     @MockBean
     private EventLogService eventLogService;
 
+
     @MockBean
-    private Validator validator;
-    
+    private AdvertDefinition advertDefinition;
+
     @MockBean
     private UserService userService;
 
@@ -128,40 +121,69 @@ class GrantAdvertControllerTest {
     }
 
     @Nested
-    class updatePageResponse {
+    class UpdatePageResponseTests {
 
-        UUID grantAdvertId = UUID.fromString("33bbb645-271f-4a2f-b272-8153e68a8bd7");
+        private static final UUID GRANT_ADVERT_ID = UUID.fromString("33bbb645-271f-4a2f-b272-8153e68a8bd7");
 
-        String sectionId = "123";
+        private static final String SECTION_ID = "123";
 
-        String pageId = "987";
+        private static final String PAGE_ID = "987";
 
-        String questionId = "grantShortDescription";
+        private static final String QUESTION_ID = "grantShortDescription";
 
-        String expectedResponse = "This is a description";
+        private static final String EXPECTED_RESPONSE = "This is a description";
 
 
-        GrantAdvertPageResponse samplePage = GrantAdvertPageResponse.builder()
+        private static final GrantAdvertPageResponse SAMPLE_PAGE = GrantAdvertPageResponse.builder()
+                .id(PAGE_ID)
                 .status(GrantAdvertPageResponseStatus.IN_PROGRESS)
-                .questions(Collections.singletonList(GrantAdvertQuestionResponse.builder().id(questionId).seen(true)
-                        .response(expectedResponse).build()))
+                .questions(Collections.singletonList(
+                        GrantAdvertQuestionResponse.builder()
+                                .id(QUESTION_ID)
+                                .seen(true)
+                                .response(EXPECTED_RESPONSE)
+                                .build()))
                 .build();
 
-        GrantAdvertPageResponseValidationDto pagePatchDto = GrantAdvertPageResponseValidationDto.builder()
-                .grantAdvertId(grantAdvertId).sectionId(sectionId).page(samplePage).build();
+        public static final String JSON_PAGE = HelperUtils.asJsonString(SAMPLE_PAGE);
+
+        private static final GrantAdvertPageResponseValidationDto PAGE_PATCH_DTO = GrantAdvertPageResponseValidationDto.builder()
+                .grantAdvertId(GRANT_ADVERT_ID).sectionId(SECTION_ID).page(SAMPLE_PAGE).build();
+
+        private static final AdvertDefinitionQuestionValidation VALIDATION = AdvertDefinitionQuestionValidation.builder()
+                .mandatory(false)
+                .build();
+
+        private static final AdvertDefinitionQuestion QUESTION = AdvertDefinitionQuestion.builder()
+                .id(QUESTION_ID)
+                .responseType(AdvertDefinitionQuestionResponseType.SHORT_TEXT)
+                .validation(VALIDATION)
+                .build();
+
+        private static final AdvertDefinitionPage PAGE = AdvertDefinitionPage.builder()
+                .id(PAGE_ID)
+                .questions(Collections.singletonList(QUESTION))
+                .build();
+
+        private static final AdvertDefinitionSection SECTION = AdvertDefinitionSection.builder()
+                .id(SECTION_ID)
+                .pages(Collections.singletonList(PAGE))
+                .build();
 
         @Test
         @WithAdminSession
         void updatePageResponse_HappyPath() throws Exception {
-            when(validator.validate(pagePatchDto)).thenReturn(Set.of());
-            doNothing().when(grantAdvertService).updatePageResponse(pagePatchDto);
+            when(advertDefinition.getSectionById(SECTION_ID)).thenReturn(SECTION);
+            
+            doNothing().when(grantAdvertService).updatePageResponse(PAGE_PATCH_DTO);
 
             mockMvc.perform(
-                    patch(String.format("/grant-advert/%s/sections/%s/pages/%s", grantAdvertId, sectionId, pageId))
-                            .contentType(MediaType.APPLICATION_JSON).content(HelperUtils.asJsonString(samplePage)))
+                    patch(String.format("/grant-advert/%s/sections/%s/pages/%s", GRANT_ADVERT_ID, SECTION_ID, PAGE_ID))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(JSON_PAGE))
                     .andExpect(status().isOk());
 
-            verify(eventLogService).logAdvertUpdatedEvent(any(), anyString(), anyLong(), eq(grantAdvertId.toString()));
+            verify(eventLogService).logAdvertUpdatedEvent(any(), anyString(), anyLong(), eq(GRANT_ADVERT_ID.toString()));
         }
 
         // missing test around failed validation - I can't find a way to handcraft a
@@ -173,30 +195,33 @@ class GrantAdvertControllerTest {
         @Test
         @WithAdminSession
         void updatePageResponse_NoGrantAdvert() throws Exception {
-            when(validator.validate(pagePatchDto)).thenReturn(Set.of());
+            when(advertDefinition.getSectionById(SECTION_ID)).thenReturn(SECTION);
             doThrow(new NotFoundException()).when(grantAdvertService).updatePageResponse(any());
 
             mockMvc.perform(
-                    patch(String.format("/grant-advert/%s/sections/%s/pages/%s", grantAdvertId, sectionId, pageId))
-                            .contentType(MediaType.APPLICATION_JSON).content(HelperUtils.asJsonString(samplePage)))
+                    patch(String.format("/grant-advert/%s/sections/%s/pages/%s", GRANT_ADVERT_ID, SECTION_ID, PAGE_ID))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(JSON_PAGE))
                     .andExpect(status().isNotFound());
         }
 
         @Test
         void updatePageResponse_NullBody() throws Exception {
             mockMvc.perform(
-                    patch(String.format("/grant-advert/%s/sections/%s/pages/%s", grantAdvertId, sectionId, pageId)))
+                    patch(String.format("/grant-advert/%s/sections/%s/pages/%s", GRANT_ADVERT_ID, SECTION_ID, PAGE_ID)))
                     .andExpect(status().isUnsupportedMediaType());
         }
 
         @Test
         void updatePageResponse_GenericException() throws Exception {
-            when(validator.validate(pagePatchDto)).thenReturn(Set.of());
+            when(advertDefinition.getSectionById(SECTION_ID))
+                    .thenReturn(new AdvertDefinitionSection(SECTION_ID, "", Collections.emptyList()));
             doThrow(new RuntimeException()).when(grantAdvertService).updatePageResponse(any());
 
             mockMvc.perform(
-                    patch(String.format("/grant-advert/%s/sections/%s/pages/%s", grantAdvertId, sectionId, pageId))
-                            .contentType(MediaType.APPLICATION_JSON).content(HelperUtils.asJsonString(samplePage)))
+                    patch(String.format("/grant-advert/%s/sections/%s/pages/%s", GRANT_ADVERT_ID, SECTION_ID, PAGE_ID))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(JSON_PAGE))
                     .andExpect(status().isInternalServerError());
         }
 
@@ -297,7 +322,7 @@ class GrantAdvertControllerTest {
     @Nested
     class unpublishGrantAdvertLambda {
 
-        final String LAMBDA_AUTH_HEADER = "topSecretKey";
+        private static final String LAMBDA_AUTH_HEADER = "topSecretKey";
 
         @Test
         void unpublishGrantAdvertLambda_success() throws Exception {
@@ -341,7 +366,7 @@ class GrantAdvertControllerTest {
     @Nested
     class publishGrantAdvertLambda {
 
-        final String LAMBDA_AUTH_HEADER = "topSecretKey";
+        private static final String LAMBDA_AUTH_HEADER = "topSecretKey";
 
         @Test
         void publishGrantAdvertLambda_success() throws Exception {
@@ -441,7 +466,7 @@ class GrantAdvertControllerTest {
     }
 
     @Nested
-    class getAdvertPublishInformation {
+    class GetAdvertPublishInformationTests {
 
         private final Integer grantSchemeId = 1;
 
